@@ -57,8 +57,6 @@ public class test2 {
 						previousLineIsEmpty = false;
 						writer.write(modifiedLine + "\n");
 					}
-
-					System.out.println("Current line: " + line);
 				}
 				writer.close();
 			} catch (IOException e) {
@@ -235,27 +233,32 @@ public class test2 {
 		try {
 			BufferedReader readerCSV = new BufferedReader(new FileReader(airportCSVpath));
 
-			String line = readerCSV.readLine();
+			String[] header = readerCSV.readLine().split(",");
+
+			// find the row that contains airport names
+			for (int i = 0; i < header.length; i++) {
+				if (header[i].equals("name")) {
+					airportCsvNameRow = i + 1;
+				}
+			}
+
+			String line;
+
 			while ((line = readerCSV.readLine()) != null) {
 				data = line.split(",");
 
+				// check if data is malformed by checking if a row is missing
 				if (data.length < 6) {
 					readerCSV.close();
 					return "Airport lookup malformed";
 				}
 
-				int index = 0;
+				// check if data is malformed by checking if a cell is empty
 				for (String cell : data) {
-
-					if (cell.trim() == "name") {
-						airportCsvNameRow = index;
-					}
-
 					if (cell.trim().isEmpty()) {
 						readerCSV.close();
 						return "Airport lookup malformed";
 					}
-					index++;
 				}
 			}
 			readerCSV.close();
