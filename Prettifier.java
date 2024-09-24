@@ -15,7 +15,7 @@ public class Prettifier {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
-		if (args.length > 0 && args[0].equals("-h") || args.length < 3) { // Check if -h option is provided
+		if (args.length > 0 && args[0].equals("-h") || args.length != 3) { // Check if -h option is provided
 			displayUsage();
 			return;
 		}
