@@ -33,7 +33,7 @@ public class test2 {
 					BufferedWriter writer = new BufferedWriter(new FileWriter(args[1]))) {
 
 				String line;
-				String lastNotEmptyLine = "";
+				boolean previousLineIsEmpty = true;
 				while ((line = reader.readLine()) != null) {
 
 					// if (line != null) {
@@ -41,15 +41,24 @@ public class test2 {
 					// // Write the modified line to the output file
 					// writer.write(modifiedLine);
 					// }
+
 					String modifiedLine = modifyLine(line);
 
+					if (previousLineIsEmpty == true && modifiedLine.isEmpty()) {
+						previousLineIsEmpty = true;
+					}
+
+					if (modifiedLine.isEmpty() && previousLineIsEmpty == false) {
+						previousLineIsEmpty = true;
+						writer.write("\n" + modifiedLine);
+					}
+
 					if (!modifiedLine.isEmpty()) {
-						lastNotEmptyLine = modifiedLine;
+						previousLineIsEmpty = false;
 						writer.write(modifiedLine + "\n");
 					}
 
 					System.out.println("Current line: " + line);
-					System.out.println("Previous line: " + lastNotEmptyLine);
 				}
 				writer.close();
 			} catch (IOException e) {
@@ -73,11 +82,11 @@ public class test2 {
 	private static String modifyLine(String lineInput) {
 
 		// find match for whitespace characters and replace with newline
-		Pattern patternWhitespace = Pattern.compile("\f|\r|\n" + "\\x0B\\f\\r\\x85\\u2028\\u2029");
+		Pattern patternWhitespace = Pattern.compile("\f|\r|\\x0B\\f\\r\\x85\\u2028\\u2029");
 		Matcher matcherWhitespace = patternWhitespace.matcher(lineInput);
 
 		if (matcherWhitespace.find()) {
-			lineInput = lineInput.replace(matcherWhitespace.group(0), "\n");
+			lineInput = lineInput.replaceAll(matcherWhitespace.group(0), "\n");
 		}
 
 		lineInput = lineInput.replaceAll("\n{2,}", "\n");
