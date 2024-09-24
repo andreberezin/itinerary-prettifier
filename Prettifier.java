@@ -11,7 +11,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
-public class test2 {
+public class Prettifier {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
