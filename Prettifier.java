@@ -1,14 +1,9 @@
-
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.time.LocalDate;
@@ -16,179 +11,239 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
-public class Prettifier {
+public class test2 {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
-		if (args.length > 0 && args[0].equals("-h")) { // Check if -h option is provided
+		if (args.length > 0 && args[0].equals("-h") || args.length < 3) { // Check if -h option is provided
 			displayUsage();
 			return;
 		}
+		airportCSVpath = args[2];
 
-		// ArrayList<String> airportList = readCSV(args[2]);
+		if (isDataMalformed(airportCSVpath) == "Airport lookup file not found") {
+			System.out.println(isDataMalformed(airportCSVpath));
+			return;
+		} else if (isDataMalformed(airportCSVpath) == "Airport lookup malformed") {
+			System.out.println(isDataMalformed(airportCSVpath));
+			return;
+		} else {
+			// Read the input file and write into a new file
+			try (BufferedReader reader = new BufferedReader(new FileReader(args[0]));
+					BufferedWriter writer = new BufferedWriter(new FileWriter(args[1]))) {
 
-		writeFile(args[1], modifyDates(modifyAirportNames(readFile(args[0]))));
+				String line;
+				boolean previousLineIsEmpty = true;
+				while ((line = reader.readLine()) != null) {
+
+					String modifiedLine = modifyLine(line);
+
+					// in case multiple empty lines are in a row
+					if (previousLineIsEmpty == true && modifiedLine.isEmpty()) {
+						previousLineIsEmpty = true;
+					}
+					if (modifiedLine.isEmpty() && previousLineIsEmpty == false) {
+						previousLineIsEmpty = true;
+						writer.write("\n" + modifiedLine);
+					}
+					if (!modifiedLine.isEmpty()) {
+						previousLineIsEmpty = false;
+						writer.write(modifiedLine + "\n");
+					}
+				}
+				writer.close();
+			} catch (IOException e) {
+				System.out.println("Input not found");
+			}
+
+		}
 
 	}
 
-	// method to display the usage
+	// Method to display the usage
 	private static void displayUsage() {
 		System.out.println("Itinerary usage:");
 		System.out.println("$ java Prettifier.java ./input.txt ./output.txt ./airport-lookup.csv");
 		// Add more options as needed
 	}
 
-	// method to read the file to an array list
-	private static ArrayList<String> readFile(String inputFilePath) {
-		// Read the file and process the data
+	static String airportCSVpath;
 
-		ArrayList<String> inputList = new ArrayList<>();
+	// Method to modify a line
+	private static String modifyLine(String lineInput) {
+
+		// find match for whitespace characters and replace with newline
+		Pattern patternWhitespace = Pattern.compile("\n{2,}|\\f|\\r|\\x0B\\f\\r\\x85\\u2028\\u2029");
+		Matcher matcherWhitespace = patternWhitespace.matcher(lineInput);
+
+		if (matcherWhitespace.find()) {
+			lineInput = lineInput.replaceAll(matcherWhitespace.group(0), "\n");
+		}
+
+		lineInput = modifyAirportNames(lineInput);
+		lineInput = modifyDates(lineInput);
+
+		return lineInput.trim();
+	}
+
+	// Method to convert IATA and ICAO codes to airport names
+	public static String modifyAirportNames(String lineInput) {
+		// find match for the IATA airport code in the input.txt file
+		Pattern patternIATA = Pattern.compile("(#\\w{3})");
+		Matcher matcherIATA = patternIATA.matcher(lineInput);
+
+		String airportCode = "";
+		String[] airport;
+
+		if (matcherIATA.find()) {
+			airportCode = matcherIATA.group(1);
+		} // read the CSV file only if a match has been found from input.txt to find
+			// matching line from the CSV
+
+		if (!airportCode.isEmpty())
+			try {
+				BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
+
+				String airportLine = readerAirport.readLine();
+				while ((airportLine = readerAirport.readLine()) != null) {
+					airportLine = airportLine.replaceAll(", ", ":");
+					if (airportLine.contains(airportCode.substring(1, airportCode.length()))) {
+						airport = airportLine.split(",");
+						String airportName = airport[airportCsvNameRow];
+						lineInput = lineInput.replace(airportCode, airportName);
+						readerAirport.close();
+					}
+				}
+				readerAirport.close();
+			} catch (IOException e) { // in case airport lookup file not found
+				if (e.getMessage().contains("No such file or directory")) {
+					System.out.println("Airport lookup file not found");
+				}
+			}
+
+		// find match for the ICAO airport code in the input.txt file
+		Pattern patternICAO = Pattern.compile("(#{2}\\w{4})");
+		Matcher matcherICAO = patternICAO.matcher(lineInput);
+
+		if (matcherICAO.find()) {
+			airportCode = matcherICAO.group(1);
+		} // read the CSV file only if a match has been found from input.txt to find
+			// matching line from the CSV
+
+		if (!airportCode.isEmpty())
+			try {
+				BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
+
+				String airportLine = readerAirport.readLine();
+				while ((airportLine = readerAirport.readLine()) != null) {
+					airportLine = airportLine.replaceAll(", ", ":");
+					if (airportLine.contains(airportCode.substring(2, airportCode.length()))) {
+						airport = airportLine.split(",");
+						String airportName = airport[airportCsvNameRow];
+						lineInput = lineInput.replace(airportCode, airportName);
+					}
+				}
+				readerAirport.close();
+			} catch (IOException e) { // in case airport lookup file is not found
+				if (e.getMessage().contains("No such file or directory")) {
+				}
+			}
+		return lineInput;
+	}
+
+	// Method to modify the date and time formats
+	public static String modifyDates(String lineInput) {
+		Pattern patternDate = Pattern.compile("(T12|D|T24)\\(([^)]+)\\)");
+		Matcher matcherDate = patternDate.matcher(lineInput);
+		if (matcherDate.find()) {
+			String date = matcherDate.group(2);
+			String format = matcherDate.group(1);
+			String formattedDate = date;
+
+			// if date is malformed return inital value
+			if (date.length() != 22 && date.length() != 17) {
+				return lineInput;
+			}
+
+			if (format.equals("D")) { // if date format
+				LocalDate localDate = LocalDate.parse(date.substring(0, 10));
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+				formattedDate = localDate.format(formatter);
+			}
+			if (format.equals("T12")) { // if 12-hour format
+				LocalDateTime localDateTime = LocalDateTime.parse(date.substring(0, 16));
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mma");
+				String formattedTime = localDateTime.format(formatter);
+
+				// Add timezone offset
+				if (date.endsWith("Z")) { // in case of Zulu time
+					formattedDate = formattedTime + " (+00:00)";
+				} else {
+					String timezoneOffset = date.substring(16);
+					ZoneOffset zoneOffsetObj = ZoneOffset.ofHoursMinutes(
+							Integer.parseInt(timezoneOffset.substring(0, 3)),
+							Integer.parseInt(timezoneOffset.substring(4)));
+					formattedDate = formattedTime + " (" + zoneOffsetObj.toString() + ")";
+				}
+			}
+			if (format.equals("T24")) { // if 24-hour format
+				String time = date.substring(11, 16);
+				// Add timezone offset
+				if (date.endsWith("Z")) { // in case of Zulu time
+					formattedDate = time + " (+00:00)";
+				} else {
+					formattedDate = time + " (" + date.substring(16, date.length()) + ")";
+				}
+			}
+			lineInput = lineInput.replace(matcherDate.group(0), formattedDate);
+		}
+		return lineInput;
+	}
+
+	static int airportCsvNameRow; // save row number for names in airport lookup csv file
+
+	// Method to check if airport lookup CSV file is found and if it's malformed or
+	// not
+	public static String isDataMalformed(String airportCSVpath) {
+		String[] data;
 
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(inputFilePath));
+			BufferedReader readerCSV = new BufferedReader(new FileReader(airportCSVpath));
+			String[] header = readerCSV.readLine().split(",");
+
+			// find the row that contains airport names
+			for (int i = 0; i < header.length; i++) {
+
+				if (header[i].equals("name")) {
+					airportCsvNameRow = i;
+				}
+				// check if data is malformed by checking if number of rows matches or not
+				if (header.length != 6) {
+					readerCSV.close();
+					return "Airport lookup malformed";
+				}
+			}
+
 			String line;
-			while ((line = reader.readLine()) != null) {
-				inputList.addAll(Arrays.asList(line.split(" ")));
-				// System.out.println(inputList); // reader.readLine();
+			while ((line = readerCSV.readLine()) != null) {
+				line = line.replaceAll(", ", ":");
+				data = line.split(",");
 
-				// inputList.add("new line");
-			}
-			reader.close();
-		} catch (IOException e) {
-			System.out.println("Input not found");
-		}
-
-		return inputList;
-	}
-
-	// method to read the csv file to an array list
-	private static ArrayList<String> readCSV(String airportCSV) {
-
-		ArrayList<String> airportList = new ArrayList<>();
-
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(airportCSV));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				// airportList.addAll(Arrays.asList(line.split(" ")));
-				airportList.add(line);
-			}
-			reader.close();
-		} catch (IOException e) {
-			System.out.println("Airport lookup not found");
-		}
-
-		// System.out.println(airportList);
-		return airportList;
-	}
-
-	// method to convert the airport code
-	private static ArrayList<String> modifyAirportNames(ArrayList<String> inputList) {
-		int index = 0;
-		ArrayList<String> airportList = readCSV("airport-lookup.csv");
-
-		for (String word : inputList) {
-
-			if (word.startsWith("#")) { // would be safer with regex
-				word = word.replaceAll("\\W+", "");
-
-				// find the match from airportList and replace
-				for (String airport : airportList) {
-					// find the match from airportList and replace
-
-					if (airport.contains(word)) {
-						String[] airportArray = airport.split(",");
-						// String airportName = airport.substring(0, airport.indexOf(","));
-						String destinationAirport = airportArray[0];
-						inputList.set(index, destinationAirport);
-						break;
+				for (String cell : data) { // iterate over every cell to check if data is malformed by checking if a
+											// cell is empty
+					if (cell.trim().isEmpty() || data.length != 6) {
+						readerCSV.close();
+						return "Airport lookup malformed";
 					}
+
 				}
 			}
-
-			index++;
-		}
-
-		return inputList;
-	}
-
-	// method to modify the dates
-
-	private static ArrayList<String> modifyDates(ArrayList<String> inputList) throws ParseException {
-		int index = 0;
-
-		for (String word : inputList) {
-
-			// Pattern pattern = Pattern.compile("(T12|D|T24)(([^)]+))");
-			Pattern pattern = Pattern.compile("(T12|D|T24)(\\(([^)]+)\\))");
-			Matcher matcher = pattern.matcher(word);
-
-			if (matcher.find()) {
-				String date = (String) matcher.group(3);
-				String format = matcher.group(1);
-				String formattedDate = date;
-
-				if (format.equals("D")) { // if word is date && word matches
-
-					LocalDate localDate = LocalDate.parse(date.substring(0, 10));
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-					formattedDate = localDate.format(formatter);
-
-				}
-				if (format.equals("T12")) { // if word is 12 hour time && word matches regex of date format
-					// convert to 12-hour time format
-					LocalDateTime localDateTime = LocalDateTime.parse(date.substring(0, 16));
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mma");
-					String formattedTime = localDateTime.format(formatter);
-
-					// add timezone offset
-					if (date.endsWith("Z")) {
-						formattedDate = formattedTime + " (+00:00)";
-
-					} else {
-						String timezoneOffset = date.substring(16);
-						ZoneOffset zoneOffsetObj = ZoneOffset.ofHoursMinutes(
-								Integer.parseInt(timezoneOffset.substring(0, 3)),
-								Integer.parseInt(timezoneOffset.substring(4)));
-						formattedDate = formattedTime + " (" + zoneOffsetObj.toString() + ")";
-					}
-				}
-				if (format.equals("T24")) { // if word is 24 hour time && word matches regex of date format
-					String time = date.substring(11, 16);
-					// add timezone offset
-					if (date.endsWith("Z")) {
-						formattedDate = time + " (+00:00)";
-
-					} else {
-						formattedDate = time + " (" + date.substring(16, date.length()) + ")";
-					}
-				}
-
-				inputList.set(index, formattedDate);
+			readerCSV.close();
+		} catch (IOException e) { // in case airport lookup file not found
+			if (e.getMessage().contains("No such file or directory")) {
+				return "Airport lookup file not found";
 			}
-
-			index++;
 		}
-
-		System.out.println(inputList);
-		return inputList;
+		return "";
 	}
-
-	// method to write the result to a new file
-	private static void writeFile(String outputFilePath, ArrayList<String> inputList) {
-		// Read the file and process the data
-
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
-
-			for (String word : inputList) {
-				writer.write(word + " ");
-
-			}
-			writer.close();
-		} catch (IOException e) {
-			System.out.println("Input not found");
-		}
-	}
-
 }
