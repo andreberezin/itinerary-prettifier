@@ -113,7 +113,7 @@ public class test2 {
 				while ((airportLine = readerAirport.readLine()) != null) {
 					if (airportLine.contains(airportCode.substring(1, airportCode.length()))) {
 						airport = airportLine.split(",");
-						String airportName = airport[0];
+						String airportName = airport[airportCsvNameRow];
 						lineInput = lineInput.replace(airportCode, airportName);
 						readerAirport.close();
 					}
@@ -143,7 +143,7 @@ public class test2 {
 				while ((airportLine = readerAirport.readLine()) != null) {
 					if (airportLine.contains(airportCode.substring(2, airportCode.length()))) {
 						airport = airportLine.split(",");
-						String airportName = airport[0];
+						String airportName = airport[airportCsvNameRow];
 						lineInput = lineInput.replace(airportCode, airportName);
 					}
 				}
@@ -217,6 +217,8 @@ public class test2 {
 		return lineInput;
 	}
 
+	static int airportCsvNameRow;
+
 	// checks if airport lookup CSV file is found and if it's malformed or not
 	public static String isDataMalformed(String airportCSVpath) {
 		String[] data;
@@ -233,11 +235,18 @@ public class test2 {
 					return "Airport lookup malformed";
 				}
 
+				int index = 0;
 				for (String cell : data) {
+
+					if (cell.trim() == "name") {
+						airportCsvNameRow = index;
+					}
+
 					if (cell.trim().isEmpty()) {
 						readerCSV.close();
 						return "Airport lookup malformed";
 					}
+					index++;
 				}
 			}
 			readerCSV.close();
