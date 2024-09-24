@@ -80,14 +80,13 @@ public class test2 {
 	private static String modifyLine(String lineInput) {
 
 		// find match for whitespace characters and replace with newline
-		Pattern patternWhitespace = Pattern.compile("\f|\r|\\x0B\\f\\r\\x85\\u2028\\u2029");
+		Pattern patternWhitespace = Pattern.compile("\n{2,}|\f|\r|\\x0B\\f\\r\\x85\\u2028\\u2029");
 		Matcher matcherWhitespace = patternWhitespace.matcher(lineInput);
 
 		if (matcherWhitespace.find()) {
+			System.out.println("Match found");
 			lineInput = lineInput.replaceAll(matcherWhitespace.group(0), "\n");
 		}
-
-		lineInput = lineInput.replaceAll("\n{2,}", "\n");
 
 		// lineInput = lineInput.replaceAll("\n+", "\n").trim(); // if a single line has
 		// multiple new lines
@@ -118,6 +117,8 @@ public class test2 {
 
 				String airportLine = readerAirport.readLine();
 				while ((airportLine = readerAirport.readLine()) != null) {
+					airportLine = airportLine.replaceAll(", ", ":");
+					System.out.println(airportLine);
 					if (airportLine.contains(airportCode.substring(1, airportCode.length()))) {
 						airport = airportLine.split(",");
 						String airportName = airport[airportCsvNameRow];
@@ -148,6 +149,7 @@ public class test2 {
 
 				String airportLine = readerAirport.readLine();
 				while ((airportLine = readerAirport.readLine()) != null) {
+					airportLine = airportLine.replaceAll(", ", ":");
 					if (airportLine.contains(airportCode.substring(2, airportCode.length()))) {
 						airport = airportLine.split(",");
 						String airportName = airport[airportCsvNameRow];
@@ -244,11 +246,10 @@ public class test2 {
 
 			// find the row that contains airport names
 			for (int i = 0; i < header.length; i++) {
+
 				if (header[i].equals("name")) {
 					airportCsvNameRow = i;
-					if (airportCsvNameRow != 0) {
-						airportCsvNameRow++;
-					}
+
 				}
 				// check if data is malformed by checking if number of rows doesn't match
 				if (header.length != 6) {
