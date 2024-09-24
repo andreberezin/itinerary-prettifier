@@ -235,10 +235,25 @@ public class test2 {
 
 			String[] header = readerCSV.readLine().split(",");
 
+			// for (int i = 0; i <= 1; i++) {
+			// if (header.length != 6) {
+			// readerCSV.close();
+			// return "Airport lookup malformed";
+			// }
+			// }
+
 			// find the row that contains airport names
 			for (int i = 0; i < header.length; i++) {
 				if (header[i].equals("name")) {
-					airportCsvNameRow = i + 1;
+					airportCsvNameRow = i;
+					if (airportCsvNameRow != 0) {
+						airportCsvNameRow++;
+					}
+				}
+				// check if data is malformed by checking if number of rows doesn't match
+				if (header.length != 6) {
+					readerCSV.close();
+					return "Airport lookup malformed";
 				}
 			}
 
@@ -248,10 +263,10 @@ public class test2 {
 				data = line.split(",");
 
 				// check if data is malformed by checking if a row is missing
-				if (data.length < 6) {
-					readerCSV.close();
-					return "Airport lookup malformed";
-				}
+				// if (data.length != 6) {
+				// readerCSV.close();
+				// return "Airport lookup malformed";
+				// }
 
 				// check if data is malformed by checking if a cell is empty
 				for (String cell : data) {
