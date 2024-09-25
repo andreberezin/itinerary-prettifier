@@ -95,18 +95,21 @@ public class Prettifier {
 	// Method to modify a line
 	private static String modifyLine(String lineInput) {
 
-		// find match for whitespace characters and replace with newline
-		Pattern patternWhitespace = Pattern.compile("\n{2,}|\\f|\\r|\\x0B\\f\\r\\x85\\u2028\\u2029");
-		Matcher matcherWhitespace = patternWhitespace.matcher(lineInput);
-
-		if (matcherWhitespace.find()) {
-			lineInput = lineInput.replaceAll(matcherWhitespace.group(0), "\n");
-		}
-
+		lineInput = modifyWhitespace(lineInput);
 		lineInput = modifyAirportNames(lineInput);
 		lineInput = modifyDates(lineInput);
 
 		return lineInput.trim();
+	}
+
+	public static String modifyWhitespace(String lineInput) {
+
+		lineInput = lineInput.replace("\\f", "\n")
+				.replace("\n{2,}", "\n")
+				.replace("\\r", "\n")
+				.replace("\\v", "\n");
+
+		return lineInput;
 	}
 
 	// Method to convert IATA and ICAO codes to airport names
