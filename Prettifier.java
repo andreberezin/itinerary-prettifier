@@ -109,10 +109,10 @@ public class Prettifier {
 
 	public static String modifyWhitespace(String lineInput) {
 
-		lineInput = lineInput.replace("\\f", "\n")
-				.replace("\n{2,}", "\n")
-				.replace("\\r", "\n")
-				.replace("\\v", "\n");
+		lineInput = lineInput.replaceAll("\\\\f", "\n")
+				.replaceAll("\n{2,}", "\n")
+				.replaceAll("\\\\r", "\n")
+				.replaceAll("\\\\v", "\n");
 
 		return lineInput;
 	}
