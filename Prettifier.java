@@ -21,7 +21,7 @@ public class Prettifier {
 		}
 		airportCSVpath = args[2];
 
-		if (isDataMalformed(airportCSVpath) == "Airport lookup file not found") {
+		if (isDataMalformed(airportCSVpath) == "Airport lookup not found") {
 			System.out.println(isDataMalformed(airportCSVpath));
 			return;
 		} else if (isDataMalformed(airportCSVpath) == "Airport lookup malformed") {
@@ -241,7 +241,7 @@ public class Prettifier {
 			readerCSV.close();
 		} catch (IOException e) { // in case airport lookup file not found
 			if (e.getMessage().contains("No such file or directory")) {
-				return "Airport lookup file not found";
+				return "Airport lookup not found";
 			}
 		}
 		return "";
