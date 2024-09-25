@@ -15,7 +15,7 @@ public class Prettifier {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
-		if (args[0].equals("-o") && args.length != 3) { // -o flag to display output
+		if (args[0].equals("-o") && args.length == 1) { // -o flag to display output
 			displayOutput();
 			return;
 		}
