@@ -81,7 +81,7 @@ public class Prettifier {
 
 			String lineOutput;
 			while ((lineOutput = readerOutput.readLine()) != null) {
-				System.out.println("\u001B[31m" + lineOutput);
+				System.out.println("\u001B[34m" + lineOutput + "\u001B[0m");
 			}
 			readerOutput.close();
 		} catch (IOException e) { // in case airport lookup file not found
