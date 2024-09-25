@@ -15,23 +15,23 @@ public class Prettifier {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
-		if (args[0].equals("-h") && args.length != 3) { // -h flag to display usage
-			displayUsage();
+		if (args[0].equals("-o") && args.length != 3) { // -o flag to display output
+			displayOutput();
 			return;
 		}
 
-		if (args[0].equals("-o") && args.length != 3) { // -o flag to display output
-			displayOutput();
+		if (args[0].equals("-h") || args.length != 3) { // -h flag to display usage
+			displayUsage();
 			return;
 		}
 
 		airportCSVpath = args[2];
 
 		if (isDataMalformed(airportCSVpath) == "Airport lookup not found") {
-			System.out.println(isDataMalformed(airportCSVpath));
+			System.out.println("\u001B[31m" + isDataMalformed(airportCSVpath) + "\u001B[0m");
 			return;
 		} else if (isDataMalformed(airportCSVpath) == "Airport lookup malformed") {
-			System.out.println(isDataMalformed(airportCSVpath));
+			System.out.println("\u001B[31m" + isDataMalformed(airportCSVpath) + "\u001B[0m");
 			return;
 		} else {
 			// Read the input file and write into a new file
@@ -59,7 +59,7 @@ public class Prettifier {
 				}
 				writer.close();
 			} catch (IOException e) {
-				System.out.println("Input not found");
+				System.out.println("\u001B[31m" + "Input not found" + "\u001B[0m");
 			}
 
 		}
@@ -68,8 +68,9 @@ public class Prettifier {
 
 	// Method to display the usage
 	private static void displayUsage() {
-		System.out.println("Itinerary usage:");
-		System.out.println("$ java Prettifier.java ./input.txt ./output.txt ./airport-lookup.csv");
+		System.out.println("\u001B[34m" + "Itinerary usage:" + "\u001B[0m");
+		System.out.println(
+				"\u001B[34m" + "$ java Prettifier.java ./input.txt ./output.txt ./airport-lookup.csv" + "\u001B[0m");
 		// Add more options as needed
 	}
 
@@ -81,11 +82,11 @@ public class Prettifier {
 
 			String lineOutput;
 			while ((lineOutput = readerOutput.readLine()) != null) {
-				System.out.println("\u001B[34m" + lineOutput + "\u001B[0m");
+				System.out.println("\u001B[32m" + lineOutput + "\u001B[0m");
 			}
 			readerOutput.close();
 		} catch (IOException e) { // in case airport lookup file not found
-			System.out.println("Output not found");
+			System.out.println("\u001B[31m" + "Output not found" + "\u001B[0m");
 		}
 	}
 
@@ -156,8 +157,8 @@ public class Prettifier {
 					}
 					readerAirport.close();
 				} catch (IOException e) { // in case airport lookup file not found
-					if (e.getMessage().contains("No such file or directory")) {
-						System.out.println("Airport lookup file not found");
+					if (e.getMessage().contains("\u001B[31m" + "No such file or directory" + "\u001B[0m")) {
+						System.out.println("\u001B[31m" + "Airport lookup file not found" + "\u001B[0m");
 					}
 				}
 			}
