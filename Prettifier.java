@@ -15,10 +15,16 @@ public class Prettifier {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
-		if (args.length > 0 && args[0].equals("-h") || args.length != 3) { // Check if -h option is provided
+		if (args[0].equals("-h") && args.length != 3) { // -h flag to display usage
 			displayUsage();
 			return;
 		}
+
+		if (args[0].equals("-o") && args.length != 3) { // -o flag to display output
+			displayOutput();
+			return;
+		}
+
 		airportCSVpath = args[2];
 
 		if (isDataMalformed(airportCSVpath) == "Airport lookup not found") {
@@ -65,6 +71,22 @@ public class Prettifier {
 		System.out.println("Itinerary usage:");
 		System.out.println("$ java Prettifier.java ./input.txt ./output.txt ./airport-lookup.csv");
 		// Add more options as needed
+	}
+
+	static String outputPath;
+
+	private static void displayOutput() {
+		try {
+			BufferedReader readerOutput = new BufferedReader(new FileReader("output.txt"));
+
+			String lineOutput;
+			while ((lineOutput = readerOutput.readLine()) != null) {
+				System.out.println("\u001B[31m" + lineOutput);
+			}
+			readerOutput.close();
+		} catch (IOException e) { // in case airport lookup file not found
+			System.out.println("Output not found");
+		}
 	}
 
 	static String airportCSVpath;
