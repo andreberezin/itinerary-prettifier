@@ -11,7 +11,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
-public class Prettifier {
+public class Prettifier3 {
 	// Main method to start the program
 	public static void main(String[] args) throws ParseException {
 
@@ -92,6 +92,7 @@ public class Prettifier {
 
 		String airportCode = "";
 		String airportName = "";
+		String cityName = "";
 		String[] airport;
 
 		String[] lineInputArray = lineInput.split(" ");
@@ -100,7 +101,8 @@ public class Prettifier {
 			word = word.replace(".", "").trim();
 			word = word.replace(",", "").trim();
 
-			if (word.matches("#{1}[A-Z]{3}") || word.matches("#{2}[A-Z]{4}")) {
+			if (word.matches("#{1}[A-Z]{3}") || word.matches("#{2}[A-Z]{4}") || word.matches("[*]#[A-Z]{3}")
+					|| word.matches("[*]#{2}[A-Z]{4}")) {
 				airportCode = word;
 				try {
 					BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
@@ -109,13 +111,24 @@ public class Prettifier {
 						airportLine = airportLine.replaceAll(", ", ":");
 						airport = airportLine.split(",");
 						for (String airportCell : airport) {
-							if (airportCell.equals(airportCode.substring(1, airportCode.length()))) {
-								airportName = airport[airportCsvNameRow];
-								lineInput = lineInput.replace(airportCode, airportName);
-							}
-							if (airportCell.equals(airportCode.substring(2, airportCode.length()))) {
-								airportName = airport[airportCsvNameRow];
-								lineInput = lineInput.replace(airportCode, airportName);
+							if (airportCode.startsWith("*")) {
+								if (airportCell.equals(airportCode.substring(2, airportCode.length()))) {
+									cityName = airport[airportCsvCityNameRow];
+									lineInput = lineInput.replace(airportCode, cityName);
+								}
+								if (airportCell.equals(airportCode.substring(4, airportCode.length()))) {
+									cityName = airport[airportCsvCityNameRow];
+									lineInput = lineInput.replace(airportCode, cityName);
+								}
+							} else {
+								if (airportCell.equals(airportCode.substring(1, airportCode.length()))) {
+									airportName = airport[airportCsvAirportNameRow];
+									lineInput = lineInput.replace(airportCode, airportName);
+								}
+								if (airportCell.equals(airportCode.substring(2, airportCode.length()))) {
+									airportName = airport[airportCsvAirportNameRow];
+									lineInput = lineInput.replace(airportCode, airportName);
+								}
 							}
 						}
 					}
@@ -181,7 +194,8 @@ public class Prettifier {
 		return lineInput;
 	}
 
-	static int airportCsvNameRow; // save row number for names in airport lookup csv file
+	static int airportCsvAirportNameRow; // save row number for airport names in airport lookup csv file
+	static int airportCsvCityNameRow; // save row number for city names in airport lookup csv file
 
 	// Method to check if airport lookup CSV file is found and if it's malformed or
 	// not
@@ -196,7 +210,10 @@ public class Prettifier {
 			for (int i = 0; i < header.length; i++) {
 
 				if (header[i].equals("name")) {
-					airportCsvNameRow = i;
+					airportCsvAirportNameRow = i;
+				}
+				if (header[i].equals("municipality")) {
+					airportCsvCityNameRow = i;
 				}
 				// check if data is malformed by checking if number of rows matches or not
 				if (header.length != 6) {
