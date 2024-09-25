@@ -89,65 +89,46 @@ public class Prettifier {
 	// Method to convert IATA and ICAO codes to airport names
 	public static String modifyAirportNames(String lineInput) {
 		// find match for the IATA airport code in the input.txt file
-		Pattern patternIATA = Pattern.compile("(#\\w{3})");
-		Matcher matcherIATA = patternIATA.matcher(lineInput);
 
 		String airportCode = "";
+		String airportName = "";
 		String[] airport;
 
-		if (matcherIATA.find()) {
-			airportCode = matcherIATA.group(1);
-		} // read the CSV file only if a match has been found from input.txt to find
-			// matching line from the CSV
+		String[] lineInputArray = lineInput.split(" ");
 
-		if (!airportCode.isEmpty())
-			try {
-				BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
+		for (String word : lineInputArray) {
+			word = word.replace(".", "").trim();
+			word = word.replace(",", "").trim();
 
-				String airportLine = readerAirport.readLine();
-				while ((airportLine = readerAirport.readLine()) != null) {
-					airportLine = airportLine.replaceAll(", ", ":");
-					if (airportLine.contains(airportCode.substring(1, airportCode.length()))) {
+			if (word.matches("#{1}[A-Z]{3}") || word.matches("#{2}[A-Z]{4}")) {
+				airportCode = word;
+				try {
+					BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
+					String airportLine = readerAirport.readLine();
+					while ((airportLine = readerAirport.readLine()) != null) {
+						airportLine = airportLine.replaceAll(", ", ":");
 						airport = airportLine.split(",");
-						String airportName = airport[airportCsvNameRow];
-						lineInput = lineInput.replace(airportCode, airportName);
-						readerAirport.close();
+						for (String airportCell : airport) {
+							if (airportCell.equals(airportCode.substring(1, airportCode.length()))) {
+								airportName = airport[airportCsvNameRow];
+								lineInput = lineInput.replace(airportCode, airportName);
+							}
+							if (airportCell.equals(airportCode.substring(2, airportCode.length()))) {
+								airportName = airport[airportCsvNameRow];
+								lineInput = lineInput.replace(airportCode, airportName);
+							}
+						}
 					}
-				}
-				readerAirport.close();
-			} catch (IOException e) { // in case airport lookup file not found
-				if (e.getMessage().contains("No such file or directory")) {
-					System.out.println("Airport lookup file not found");
+					readerAirport.close();
+				} catch (IOException e) { // in case airport lookup file not found
+					if (e.getMessage().contains("No such file or directory")) {
+						System.out.println("Airport lookup file not found");
+					}
 				}
 			}
 
-		// find match for the ICAO airport code in the input.txt file
-		Pattern patternICAO = Pattern.compile("(#{2}\\w{4})");
-		Matcher matcherICAO = patternICAO.matcher(lineInput);
+		}
 
-		if (matcherICAO.find()) {
-			airportCode = matcherICAO.group(1);
-		} // read the CSV file only if a match has been found from input.txt to find
-			// matching line from the CSV
-
-		if (!airportCode.isEmpty())
-			try {
-				BufferedReader readerAirport = new BufferedReader(new FileReader(airportCSVpath));
-
-				String airportLine = readerAirport.readLine();
-				while ((airportLine = readerAirport.readLine()) != null) {
-					airportLine = airportLine.replaceAll(", ", ":");
-					if (airportLine.contains(airportCode.substring(2, airportCode.length()))) {
-						airport = airportLine.split(",");
-						String airportName = airport[airportCsvNameRow];
-						lineInput = lineInput.replace(airportCode, airportName);
-					}
-				}
-				readerAirport.close();
-			} catch (IOException e) { // in case airport lookup file is not found
-				if (e.getMessage().contains("No such file or directory")) {
-				}
-			}
 		return lineInput;
 	}
 
