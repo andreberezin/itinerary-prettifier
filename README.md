@@ -10,11 +10,11 @@ The Prettifier tool reads a text-based itinerary from a file, reformats the text
 
 To display usage
 ```bash
-    java Prettifier.java -h
+  java Prettifier.java -h
 ```
 
 To print the last output file
 ```bash
-    java Prettifier.java -o
+  java Prettifier.java -o
 ```
 
